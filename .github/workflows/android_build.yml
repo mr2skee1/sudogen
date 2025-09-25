@@ -1,34 +1,39 @@
-name: Android CI
+name: Build Android APK
 
 on:
   push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
+        java-version: '17'
         distribution: 'temurin'
-        java-version: 17
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x ./gradlew
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.22.2'
+        channel: 'stable'
+        cache: true
 
-    - name: Build with Gradle
-      run: ./gradlew assembleDebug
+    - name: Get Flutter dependencies
+      run: flutter pub get
 
-    - name: Upload APK
+    - name: Build APK
+      run: flutter build apk --release
+
+    - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
-        name: sudogen-debug-apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+        name: SudoGen-release-apk
+        path: build/app/outputs/flutter-apk/app-release.apk
